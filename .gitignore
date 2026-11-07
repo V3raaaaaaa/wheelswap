@@ -1,0 +1,11 @@
+out/
+cache/
+broadcast/*/31337/
+broadcast/*/dry-run/
+.env
+*.key
+.kombat_deployer
+node_modules/
+broadcast/Deploy.s.sol/
+broadcast/Deploy.s.sol/
+broadcast/*/dry-run/
