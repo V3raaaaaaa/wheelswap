@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wheelswap</title>
+<meta name="description" content="Wheelswap — the SQK/ETH pool on Squeekchain (Sepolia) whose swap fee is set by Squeektoshi's real wheel: NAP 0.50%, JOG 0.30%, ZOOMIES 0.10%.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#07090f; --bg2:#0c1019; --panel:#0f1522; --line:#1d2740; --fg:#dfe6f3; --mute:#7f8ba3;
+  --amber:#ffb545; --teal:#4fe3c1; --pink:#ff5e8a; --violet:#9b8cff; --ok:#7dff9a; --bad:#ff6b6b;
+  --nap:#9b8cff; --jog:#4fe3c1; --zoom:#ffb545;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace; --pixel:'Press Start 2P',var(--mono);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:14px;line-height:1.5}
+body{background:
+  radial-gradient(1200px 600px at 50% -200px,#1a2440 0%,transparent 60%),
+  repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,255,255,.015) 23px 24px),var(--bg)}
+a{color:var(--teal)}
+button,input,select{font-family:inherit;font-size:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:6px 14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.logo{font-family:var(--pixel);font-size:15px;letter-spacing:1px;color:var(--amber);text-shadow:0 0 18px rgba(255,181,69,.35)}
+.logo span{color:var(--teal)}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--bg2);font-size:12px;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mute);box-shadow:0 0 10px currentColor}
+.dot.NAP{background:var(--nap);color:var(--nap)} .dot.JOG{background:var(--jog);color:var(--jog)} .dot.ZOOMIES{background:var(--zoom);color:var(--zoom);animation:pulse .6s infinite alternate}
+@keyframes pulse{from{transform:scale(.8)}to{transform:scale(1.3)}}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:#141c2e;color:var(--fg);padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--teal)} .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:linear-gradient(180deg,#ffc76a,#ff9f1a);color:#1a1200;border-color:#ff9f1a;font-family:var(--pixel);font-size:11px;padding:14px 18px;letter-spacing:.5px}
+.btn.teal{background:linear-gradient(180deg,#6cf0d3,#2fc7a4);color:#02201a;border-color:#2fc7a4}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+h2{font-family:var(--pixel);font-size:11px;color:var(--mute);letter-spacing:1px;margin:0 0 12px}
+h2 b{color:var(--fg)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.tiers{grid-template-columns:1fr}}
+.tier{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg2);transition:.2s}
+.tier .n{font-family:var(--pixel);font-size:10px;letter-spacing:1px}
+.tier .f{font-size:26px;font-weight:700;margin:6px 0 2px}
+.tier .d{font-size:11.5px;color:var(--mute)}
+.tier.NAP .n{color:var(--nap)} .tier.JOG .n{color:var(--jog)} .tier.ZOOMIES .n{color:var(--zoom)}
+.tier.active{border-color:currentColor;box-shadow:0 0 0 1px currentColor inset,0 0 24px -8px currentColor}
+.tier.active.NAP{color:var(--nap)} .tier.active.JOG{color:var(--jog)} .tier.active.ZOOMIES{color:var(--zoom)}
+.tier.active .f{color:var(--fg)}
+.box{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.box label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute);margin-bottom:6px}
+.box label .bal{cursor:pointer} .box label .bal:hover{color:var(--teal)}
+.row{display:flex;gap:10px;align-items:center}
+.row input{flex:1;min-width:0;background:transparent;border:0;color:var(--fg);font-size:24px;font-weight:600;outline:none;padding:0}
+.row input::placeholder{color:#3a4560}
+.tok{font-family:var(--pixel);font-size:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#141c2e;white-space:nowrap}
+.flip{display:flex;justify-content:center;margin:-4px 0 6px}
+.flip button{width:36px;height:36px;border-radius:50%;padding:0;font-size:16px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 14px;font-size:12px;color:var(--mute)}
+.kv b{color:var(--fg);font-weight:600;text-align:right}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{border-radius:999px;padding:6px 12px;font-size:12px}
+.tabs button.on{border-color:var(--amber);color:var(--amber)}
+.note{font-size:12px;color:var(--mute);margin:8px 0 0}
+.warn{color:var(--amber)} .err{color:var(--bad)} .ok{color:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.stat .l{font-size:10.5px;color:var(--mute);letter-spacing:.5px;text-transform:uppercase}
+.stat .v{font-size:17px;font-weight:700;margin-top:2px;word-break:break-all}
+.stat .s{font-size:11px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;color:var(--mute);font-weight:400;font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;padding:6px 6px;border-bottom:1px solid var(--line)}
+td{padding:7px 6px;border-bottom:1px solid #141b2c;white-space:nowrap}
+.tscroll{overflow-x:auto}
+.tag{display:inline-block;font-family:var(--pixel);font-size:8px;padding:4px 6px;border-radius:6px;border:1px solid}
+.tag.NAP{color:var(--nap)} .tag.JOG{color:var(--jog)} .tag.ZOOMIES{color:var(--zoom)}
+canvas{width:100%;height:160px;display:block;background:var(--bg2);border:1px solid var(--line);border-radius:10px}
+.slider{width:100%;accent-color:var(--amber)}
+footer{margin-top:28px;border-top:1px solid var(--line);padding-top:14px;font-size:11.5px;color:var(--mute);line-height:1.8}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#141c2e;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:12.5px;max-width:min(560px,90vw);box-shadow:0 10px 40px rgba(0,0,0,.5);z-index:9}
+.toast a{word-break:break-all}
+[hidden]{display:none!important}
+.how{font-size:12.5px;color:var(--mute);line-height:1.7}
+.how b{color:var(--fg)}
+code{background:#141c2e;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:11.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">WHEEL<span>SWAP</span></div>
+  <div class="pill" id="wheelPill"><span class="dot" id="wheelDot"></span><span id="wheelTxt">reading SqueekCore…</span></div>
+  <div class="pill" id="rpmPill" title="live wheel from api.squeekchain.com/v1/status">cam · — rpm</div>
+  <div class="spacer"></div>
+  <span id="acct" class="pill" hidden></span>
+  <button class="btn" id="connect">Connect wallet</button>
+</header>
+
+<section class="tiers" id="tiers">
+  <div class="tier NAP" data-w="NAP"><div class="n">NAP</div><div class="f">0.50%</div><div class="d">new Squeek blocks, no new work — hamster asleep</div></div>
+  <div class="tier JOG" data-w="JOG"><div class="n">JOG</div><div class="f">0.30%</div><div class="d">work settled below the difficulty pace</div></div>
+  <div class="tier ZOOMIES" data-w="ZOOMIES"><div class="n">ZOOMIES</div><div class="f">0.10%</div><div class="d">work at or above <code id="diffTxt">difficulty</code> per 1000 blocks</div></div>
+</section>
+
+<div class="grid">
+  <div>
+    <div class="panel">
+      <div class="tabs"><button class="btn on" data-tab="swap">Swap</button><button class="btn" data-tab="add">Add liquidity</button><button class="btn" data-tab="remove">Remove</button></div>
+
+      <div id="tab-swap">
+        <div class="box">
+          <label><span>You pay</span><span class="bal" id="balIn">—</span></label>
+          <div class="row"><input id="amtIn" inputmode="decimal" placeholder="0.0"><span class="tok" id="tokIn">ETH</span></div>
+        </div>
+        <div class="flip"><button class="btn" id="flip" title="flip direction">⇅</button></div>
+        <div class="box">
+          <label><span>You receive (quoted on-chain)</span><span class="bal" id="balOut">—</span></label>
+          <div class="row"><input id="amtOut" placeholder="0.0" readonly><span class="tok" id="tokOut">SQK</span></div>
+        </div>
+        <div class="kv">
+          <span>fee right now</span><b id="qFee">—</b>
+          <span>price</span><b id="qPrice">—</b>
+          <span>price impact</span><b id="qImpact">—</b>
+          <span>min received (<input id="slip" value="0.5" size="3" style="width:3.5em;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--fg);text-align:center">% slippage)</span><b id="qMin">—</b>
+        </div>
+        <p class="note" id="permitNote" hidden>SQK → ETH uses an EIP-2612 <b>permit</b> signature: one signature, one transaction, no separate approve.</p>
+        <button class="btn primary" id="doSwap" style="width:100%;margin-top:12px" disabled>CONNECT TO SWAP</button>
+        <p class="note" id="swapMsg"></p>
+      </div>
+
+      <div id="tab-add" hidden>
+        <div class="box">
+          <label><span>SQK</span><span class="bal" id="balSqkAdd">—</span></label>
+          <div class="row"><input id="addSqk" inputmode="decimal" placeholder="0.0"><span class="tok">SQK</span></div>
+        </div>
+        <div class="box">
+          <label><span>ETH <span id="addEthHint">(auto from pool ratio)</span></span><span class="bal" id="balEthAdd">—</span></label>
+          <div class="row"><input id="addEth" inputmode="decimal" placeholder="0.0"><span class="tok">ETH</span></div>
+        </div>
+        <div class="kv"><span>LP you'd mint</span><b id="addLp">—</b><span>pool share after</span><b id="addShare">—</b></div>
+        <p class="note">First deposit sets the price. Later deposits follow the current ratio; excess ETH is refunded by the contract. Permit signs the SQK allowance inside the same transaction.</p>
+        <button class="btn primary" id="doAdd" style="width:100%;margin-top:12px" disabled>CONNECT TO ADD</button>
+        <p class="note" id="addMsg"></p>
+      </div>
+
+      <div id="tab-remove" hidden>
+        <div class="box">
+          <label><span>Your LP: <b id="myLp">—</b> wSQK-ETH</span><span id="remPct">50%</span></label>
+          <input type="range" class="slider" id="remSlider" min="1" max="100" value="50">
+        </div>
+        <div class="kv"><span>you receive</span><b id="remOut">—</b></div>
+        <button class="btn primary" id="doRemove" style="width:100%;margin-top:12px" disabled>CONNECT TO REMOVE</button>
+        <p class="note" id="remMsg"></p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>HOW THE HAMSTER SETS THE FEE</h2>
+      <div class="how">
+        Before every swap the pool calls <code>SqueekCore.state()</code> and looks at the Squeek blocks settled since it last looked.
+        <b>No new work</b> in that stretch → <b>NAP</b>. Work <b>below</b> <code>workPerThousandBlocks</code> → <b>JOG</b>. Work <b>at or above</b> it → <b>ZOOMIES</b>.
+        Between settlements the last class sticks, so the on-chain tier lags the live cam by about one round.
+        Every fee stays in the pool for LPs — no protocol cut, no owner, no fee switch.
+        Last observation: <span id="lastObs">—</span>.
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>POOL · <b>SQK / ETH</b></h2>
+      <div class="stats">
+        <div class="stat"><div class="l">SQK reserve</div><div class="v" id="rS">—</div></div>
+        <div class="stat"><div class="l">ETH reserve</div><div class="v" id="rE">—</div></div>
+        <div class="stat"><div class="l">price</div><div class="v" id="px">—</div><div class="s">SQK per ETH</div></div>
+        <div class="stat"><div class="l">LP supply</div><div class="v" id="lpSupply">—</div></div>
+        <div class="stat"><div class="l">your share</div><div class="v" id="myShare">—</div><div class="s" id="myUnder"></div></div>
+        <div class="stat"><div class="l">fees to LPs</div><div class="v" id="feesTot">—</div><div class="s">since deploy, from Swap events</div></div>
+      </div>
+      <canvas id="chart" width="600" height="160"></canvas>
+      <p class="note" id="chartNote">price history from <code>Sync</code> events</p>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>RECENT SWAPS</h2>
+      <div class="tscroll"><table><thead><tr><th>when</th><th>trade</th><th>wheel</th><th>fee</th><th>tx</th></tr></thead><tbody id="swaps"><tr><td colspan="5" style="color:var(--mute)">loading…</td></tr></tbody></table></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>WHEEL OBSERVATIONS</h2>
+      <div class="tscroll"><table><thead><tr><th>height</th><th>work Δ</th><th>pace</th><th>difficulty</th><th>class</th></tr></thead><tbody id="obs"><tr><td colspan="5" style="color:var(--mute)">none yet</td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <b>Wheelswap</b> · pool <a id="fAddr" href="#" target="_blank" rel="noopener">—</a> (Sourcify-verified, no owner) · built on <a href="https://squeekchain.com" target="_blank" rel="noopener">Squeekchain</a> · wheel via <a href="https://api.squeekchain.com/v1/status" target="_blank" rel="noopener">api.squeekchain.com</a> · <a id="fSrc" href="#" target="_blank" rel="noopener">source</a><br>
+  Sepolia testnet · unaudited · SQK and ETH here have no value · use a throwaway wallet · unofficial fan project, not affiliated with the Squeekchain team.
+</footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<script src="config.js"></script>
+<script>
+(async () => {
+const C = window.WHEELSWAP_CONFIG;
+const { ethers } = window;
+const $ = id => document.getElementById(id);
+const fmt = (x, d = 4) => { const n = Number(x); if (!isFinite(n)) return '—'; if (n === 0) return '0'; if (n < 1e-6) return n.toExponential(2); return n.toLocaleString('en-US', { maximumFractionDigits: d }); };
+const short = a => a ? a.slice(0, 6) + '…' + a.slice(-4) : '—';
+const W = ['NAP', 'JOG', 'ZOOMIES'];
+const FEE = { NAP: 50, JOG: 30, ZOOMIES: 10 };
+const toast = (html, ms = 9000) => { const t = $('toast'); t.innerHTML = html; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, ms); };
+
+const ABI = await (await fetch('abi.json')).json();
+const SQK_ABI = [
+  'function balanceOf(address) view returns (uint256)', 'function allowance(address,address) view returns (uint256)',
+  'function approve(address,uint256) returns (bool)', 'function nonces(address) view returns (uint256)',
+  'function eip712Domain() view returns (bytes1,string,string,uint256,address,bytes32,uint256[])', 'function name() view returns (string)'
+];
+const ro = new ethers.JsonRpcProvider(C.rpc, C.chainId, { staticNetwork: true });
+const pool = new ethers.Contract(C.pool, ABI, ro);
+const sqkRo = new ethers.Contract(C.sqk, SQK_ABI, ro);
+$('fAddr').textContent = short(C.pool); $('fAddr').href = `${C.explorer}/address/${C.pool}`; $('fSrc').href = C.source;
+
+let signer = null, me = null, poolW = null, sqkW = null;
+let state = { rS: 0n, rE: 0n, supply: 0n, wheel: 'NAP', fee: 50, work: 0n, height: 0n, diff: 0n, myLp: 0n, mySqk: 0n, myEth: 0n };
+let dirEthIn = true;
+const DEPLOYED = C.pool && !/^0x0{40}$/.test(C.pool);
+
+// ---------------- wheel + pool state ----------------
+async function refreshPool() {
+  if (!DEPLOYED) { $('wheelTxt').textContent = 'contract not deployed yet'; return; }
+  const [[rS, rE], supply, cw] = await Promise.all([pool.getReserves(), pool.totalSupply(), pool.currentWheel()]);
+  state.rS = rS; state.rE = rE; state.supply = supply;
+  state.wheel = W[Number(cw[0])]; state.fee = Number(cw[1]); state.work = cw[2]; state.height = cw[3]; state.diff = cw[4];
+  const [lw, lh] = await Promise.all([pool.lastWork(), pool.lastHeight()]);
+  $('wheelDot').className = 'dot ' + state.wheel;
+  $('wheelTxt').textContent = `on-chain: ${state.wheel} · fee ${(state.fee / 100).toFixed(2)}% · core h${state.height} w${state.work}`;
+  $('diffTxt').textContent = `${state.diff} work`;
+  document.querySelectorAll('.tier').forEach(t => t.classList.toggle('active', t.dataset.w === state.wheel));
+  $('lastObs').textContent = `height ${lh}, work ${lw}` + (state.height > lh ? ` → ${state.height - lh} new blocks, ${state.work - lw} new work pending classification` : ' (no new settled blocks since)');
+  $('rS').textContent = fmt(ethers.formatEther(rS), 2);
+  $('rE').textContent = fmt(ethers.formatEther(rE), 5);
+  $('px').textContent = rE > 0n ? fmt(Number(rS) / Number(rE), 2) : '—';
+  $('lpSupply').textContent = fmt(ethers.formatEther(supply), 4);
+  if (me) {
+    const [myLp, mySqk, myEth] = await Promise.all([pool.balanceOf(me), sqkRo.balanceOf(me), ro.getBalance(me)]);
+    state.myLp = myLp; state.mySqk = mySqk; state.myEth = myEth;
+    const share = supply > 0n ? Number(myLp * 1000000n / supply) / 10000 : 0;
+    $('myShare').textContent = share.toFixed(4) + '%';
+    $('myUnder').textContent = supply > 0n ? `${fmt(ethers.formatEther(myLp * rS / supply), 2)} SQK + ${fmt(ethers.formatEther(myLp * rE / supply), 5)} ETH` : '';
+    $('myLp').textContent = fmt(ethers.formatEther(myLp), 6);
+    $('balSqkAdd').textContent = `bal ${fmt(ethers.formatEther(mySqk), 2)}`; $('balEthAdd').textContent = `bal ${fmt(ethers.formatEther(myEth), 4)}`;
+    updateBalLabels();
+  }
+  quote(); addPreview(); remPreview();
+}
+async function refreshCam() {
+  try {
+    const r = await (await fetch(C.api + '/status')).json();
+    const rpm = Number(r?.measurement?.rpmMilli ?? 0) / 1000;
+    const live = rpm >= 70 ? 'ZOOMIES' : rpm > 0 ? 'JOG' : 'NAP';
+    $('rpmPill').textContent = `cam · ${rpm.toFixed(1)} rpm · ${live.toLowerCase()}`;
+  } catch { $('rpmPill').textContent = 'cam · offline'; }
+}
+
+// ---------------- swap ----------------
+function updateBalLabels() {
+  const e = `bal ${fmt(ethers.formatEther(state.myEth), 4)}`, s = `bal ${fmt(ethers.formatEther(state.mySqk), 2)}`;
+  $('balIn').textContent = dirEthIn ? e : s; $('balOut').textContent = dirEthIn ? s : e;
+}
+$('balIn').onclick = () => { if (!me) return; const b = dirEthIn ? state.myEth - ethers.parseEther('0.002') : state.mySqk; $('amtIn').value = ethers.formatEther(b > 0n ? b : 0n); quote(); };
+$('flip').onclick = () => { dirEthIn = !dirEthIn; $('tokIn').textContent = dirEthIn ? 'ETH' : 'SQK'; $('tokOut').textContent = dirEthIn ? 'SQK' : 'ETH'; $('permitNote').hidden = dirEthIn; $('amtIn').value = ''; $('amtOut').value = ''; updateBalLabels(); quote(); };
+$('amtIn').oninput = quote; $('slip').oninput = quote;
+let lastQuote = null;
+async function quote() {
+  lastQuote = null;
+  const v = $('amtIn').value.trim();
+  if (!DEPLOYED || !v || Number(v) <= 0 || state.rS === 0n) { $('amtOut').value = ''; ['qFee', 'qPrice', 'qImpact', 'qMin'].forEach(i => $(i).textContent = '—'); setSwapBtn(); return; }
+  try {
+    const amtIn = ethers.parseEther(v);
+    const [out, fee, w] = await pool.quoteSwap(amtIn, !dirEthIn);
+    const rIn = dirEthIn ? state.rE : state.rS, rOut = dirEthIn ? state.rS : state.rE;
+    const mid = Number(rOut) / Number(rIn), exec = Number(out) / Number(amtIn);
+    const impact = Math.max(0, (1 - exec / mid) * 100 - Number(fee) / 100);
+    const slip = Math.max(0, Math.min(50, Number($('slip').value) || 0));
+    const minOut = out * BigInt(Math.round((100 - slip) * 1000)) / 100000n;
+    lastQuote = { amtIn, out, minOut, fee: Number(fee), w: W[Number(w)] };
+    $('amtOut').value = ethers.formatEther(out);
+    $('qFee').textContent = `${(Number(fee) / 100).toFixed(2)}% · ${W[Number(w)]}`;
+    $('qPrice').textContent = dirEthIn ? `${fmt(exec, 2)} SQK / ETH` : `${fmt(1 / exec, 2)} SQK / ETH`;
+    $('qImpact').textContent = (impact < 0.01 ? '<0.01' : impact.toFixed(2)) + '%'; $('qImpact').className = impact > 5 ? 'warn' : '';
+    $('qMin').textContent = `${fmt(ethers.formatEther(minOut), 6)} ${dirEthIn ? 'SQK' : 'ETH'}`;
+  } catch (e) { $('amtOut').value = ''; $('qFee').textContent = 'quote failed'; }
+  setSwapBtn();
+}
+function setSwapBtn() {
+  const b = $('doSwap');
+  if (!DEPLOYED) { b.disabled = true; b.textContent = 'NOT DEPLOYED'; return; }
+  if (!me) { b.disabled = true; b.textContent = 'CONNECT TO SWAP'; return; }
+  if (state.rS === 0n) { b.disabled = true; b.textContent = 'POOL EMPTY · ADD LIQUIDITY'; return; }
+  if (!lastQuote) { b.disabled = true; b.textContent = 'ENTER AN AMOUNT'; return; }
+  const bal = dirEthIn ? state.myEth : state.mySqk;
+  if (lastQuote.amtIn > bal) { b.disabled = true; b.textContent = 'INSUFFICIENT BALANCE'; return; }
+  b.disabled = false; b.textContent = dirEthIn ? `SWAP ETH → SQK · ${lastQuote.w} ${(lastQuote.fee / 100).toFixed(2)}%` : `SIGN PERMIT + SWAP SQK → ETH · ${(lastQuote.fee / 100).toFixed(2)}%`;
+}
+$('doSwap').onclick = async () => {
+  if (!lastQuote || !poolW) return;
+  const q = lastQuote, deadline = Math.floor(Date.now() / 1000) + 1200;
+  try {
+    $('doSwap').disabled = true; $('swapMsg').textContent = dirEthIn ? 'confirm in wallet…' : 'sign the permit, then confirm the swap…';
+    let tx;
+    if (dirEthIn) tx = await poolW.swapExactETHForSQK(q.minOut, me, deadline, { value: q.amtIn });
+    else {
+      const p = await signPermit(q.amtIn, deadline);
+      tx = p ? await poolW.swapExactSQKForETHWithPermit(q.amtIn, q.minOut, me, deadline, p.v, p.r, p.s)
+             : await (async () => { await ensureAllowance(q.amtIn); return poolW.swapExactSQKForETH(q.amtIn, q.minOut, me, deadline); })();
+    }
+    $('swapMsg').innerHTML = `pending <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">${short(tx.hash)}</a>`;
+    const rc = await tx.wait();
+    const ev = rc.logs.map(l => { try { return pool.interface.parseLog(l); } catch { return null; } }).find(x => x && x.name === 'Swap');
+    const got = ev ? (dirEthIn ? `${fmt(ethers.formatEther(ev.args.sqkOut), 4)} SQK` : `${fmt(ethers.formatEther(ev.args.ethOut), 6)} ETH`) : '';
+    $('swapMsg').innerHTML = `<span class="ok">swapped</span> → ${got} at ${ev ? W[Number(ev.args.wheel)] + ' ' + (Number(ev.args.feeBps) / 100).toFixed(2) + '%' : ''} · <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">tx</a>`;
+    $('amtIn').value = ''; await refreshPool(); loadEvents();
+  } catch (e) { $('swapMsg').innerHTML = `<span class="err">${friendly(e)}</span>`; setSwapBtn(); }
+};
+
+// ---------------- permit (EIP-2612 on SqueekToken) ----------------
+let domainCache = null;
+async function sqkDomain() {
+  if (domainCache) return domainCache;
+  try {
+    const d = await sqkRo.eip712Domain();
+    domainCache = { name: d[1], version: d[2], chainId: Number(d[3]), verifyingContract: d[4] };
+  } catch { domainCache = { name: await sqkRo.name(), version: '1', chainId: C.chainId, verifyingContract: C.sqk }; }
+  return domainCache;
+}
+async function signPermit(value, deadline) {
+  try {
+    const [domain, nonce] = await Promise.all([sqkDomain(), sqkRo.nonces(me)]);
+    const types = { Permit: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }, { name: 'value', type: 'uint256' }, { name: 'nonce', type: 'uint256' }, { name: 'deadline', type: 'uint256' }] };
+    const sig = await signer.signTypedData(domain, types, { owner: me, spender: C.pool, value, nonce, deadline });
+    const { v, r, s } = ethers.Signature.from(sig);
+    return { v, r, s };
+  } catch (e) { if (/reject|denied/i.test(e.message || '')) throw e; console.warn('permit unavailable, falling back to approve', e); return null; }
+}
+async function ensureAllowance(amount) {
+  const a = await sqkRo.allowance(me, C.pool);
+  if (a >= amount) return;
+  const tx = await sqkW.approve(C.pool, ethers.MaxUint256); toast(`approving SQK… <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">tx</a>`); await tx.wait();
+}
+
+// ---------------- add / remove liquidity ----------------
+$('addSqk').oninput = () => { if (state.rS > 0n && $('addSqk').value) { try { $('addEth').value = ethers.formatEther(ethers.parseEther($('addSqk').value) * state.rE / state.rS); } catch {} } addPreview(); };
+$('addEth').oninput = () => { if (state.rS > 0n && $('addEth').value) { try { $('addSqk').value = ethers.formatEther(ethers.parseEther($('addEth').value) * state.rS / state.rE); } catch {} } addPreview(); };
+$('balSqkAdd').onclick = () => { if (me) { $('addSqk').value = ethers.formatEther(state.mySqk); $('addSqk').oninput(); } };
+function addPreview() {
+  const first = state.supply === 0n;
+  $('addEthHint').textContent = first ? '(first deposit: you set the price)' : '(auto from pool ratio)';
+  $('addEth').readOnly = false;
+  let s, e; try { s = ethers.parseEther($('addSqk').value || '0'); e = ethers.parseEther($('addEth').value || '0'); } catch { s = e = 0n; }
+  let lp = 0n;
+  if (s > 0n && e > 0n) lp = first ? isqrt(s * e) - 1000n : min(s * state.supply / state.rS, e * state.supply / state.rE);
+  $('addLp').textContent = lp > 0n ? fmt(ethers.formatEther(lp), 6) : '—';
+  $('addShare').textContent = lp > 0n ? (Number((state.myLp + lp) * 1000000n / (state.supply + lp + (first ? 1000n : 0n))) / 10000).toFixed(4) + '%' : '—';
+  const b = $('doAdd');
+  if (!DEPLOYED) { b.disabled = true; b.textContent = 'NOT DEPLOYED'; }
+  else if (!me) { b.disabled = true; b.textContent = 'CONNECT TO ADD'; }
+  else if (lp <= 0n) { b.disabled = true; b.textContent = 'ENTER AMOUNTS'; }
+  else if (s > state.mySqk || e > state.myEth) { b.disabled = true; b.textContent = 'INSUFFICIENT BALANCE'; }
+  else { b.disabled = false; b.textContent = 'SIGN PERMIT + ADD LIQUIDITY'; }
+}
+$('doAdd').onclick = async () => {
+  try {
+    const s = ethers.parseEther($('addSqk').value), e = ethers.parseEther($('addEth').value), deadline = Math.floor(Date.now() / 1000) + 1200;
+    const slip = 50n; // 0.5% on both mins
+    const sMin = state.supply === 0n ? 0n : s * (10000n - slip) / 10000n, eMin = state.supply === 0n ? 0n : e * (10000n - slip) / 10000n;
+    $('doAdd').disabled = true; $('addMsg').textContent = 'sign the permit, then confirm…';
+    const p = await signPermit(s, deadline);
+    let tx;
+    if (p) tx = await poolW.addLiquidityWithPermit(s, sMin, eMin, me, deadline, p.v, p.r, p.s, { value: e });
+    else { await ensureAllowance(s); tx = await poolW.addLiquidity(s, sMin, eMin, me, deadline, { value: e }); }
+    $('addMsg').innerHTML = `pending <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">${short(tx.hash)}</a>`;
+    const rc = await tx.wait();
+    const ev = rc.logs.map(l => { try { return pool.interface.parseLog(l); } catch { return null; } }).find(x => x && x.name === 'Mint');
+    $('addMsg').innerHTML = `<span class="ok">added</span> ${ev ? fmt(ethers.formatEther(ev.args.amountSQK), 2) + ' SQK + ' + fmt(ethers.formatEther(ev.args.amountETH), 5) + ' ETH → ' + fmt(ethers.formatEther(ev.args.liquidity), 6) + ' LP' : ''} · <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">tx</a>`;
+    $('addSqk').value = ''; $('addEth').value = ''; await refreshPool(); loadEvents();
+  } catch (e) { $('addMsg').innerHTML = `<span class="err">${friendly(e)}</span>`; addPreview(); }
+};
+$('remSlider').oninput = remPreview;
+function remPreview() {
+  const pct = BigInt($('remSlider').value); $('remPct').textContent = pct + '%';
+  const liq = state.myLp * pct / 100n;
+  $('remOut').textContent = (liq > 0n && state.supply > 0n) ? `${fmt(ethers.formatEther(liq * state.rS / state.supply), 2)} SQK + ${fmt(ethers.formatEther(liq * state.rE / state.supply), 5)} ETH` : '—';
+  const b = $('doRemove');
+  if (!me) { b.disabled = true; b.textContent = 'CONNECT TO REMOVE'; } else if (liq <= 0n) { b.disabled = true; b.textContent = 'NO LP'; } else { b.disabled = false; b.textContent = `REMOVE ${pct}%`; }
+}
+$('doRemove').onclick = async () => {
+  try {
+    const liq = state.myLp * BigInt($('remSlider').value) / 100n, deadline = Math.floor(Date.now() / 1000) + 1200;
+    const sMin = liq * state.rS / state.supply * 995n / 1000n, eMin = liq * state.rE / state.supply * 995n / 1000n;
+    $('doRemove').disabled = true; $('remMsg').textContent = 'confirm in wallet…';
+    const tx = await poolW.removeLiquidity(liq, sMin, eMin, me, deadline);
+    $('remMsg').innerHTML = `pending <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">${short(tx.hash)}</a>`;
+    await tx.wait();
+    $('remMsg').innerHTML = `<span class="ok">removed</span> · <a target="_blank" rel="noopener" href="${C.explorer}/tx/${tx.hash}">tx</a>`;
+    await refreshPool(); loadEvents();
+  } catch (e) { $('remMsg').innerHTML = `<span class="err">${friendly(e)}</span>`; remPreview(); }
+};
+
+// ---------------- events: swaps, observations, price chart ----------------
+async function getLogsChunked(filter) {
+  const latest = await ro.getBlockNumber(); const out = [];
+  for (let from = C.deployBlock; from <= latest; from += 45000) {
+    const to = Math.min(latest, from + 44999);
+    try { out.push(...await pool.queryFilter(filter, from, to)); } catch (e) { console.warn('log chunk failed', from, to, e.message); }
+  }
+  return out;
+}
+async function loadEvents() {
+  if (!DEPLOYED) return;
+  const [swaps, syncs, obs] = await Promise.all([getLogsChunked(pool.filters.Swap()), getLogsChunked(pool.filters.Sync()), getLogsChunked(pool.filters.WheelObserved())]);
+  // swaps table + fee tally
+  let feeEth = 0, feeSqk = 0;
+  const rows = swaps.slice(-25).reverse().map(ev => {
+    const a = ev.args, w = W[Number(a.wheel)], f = Number(a.feeBps);
+    const ethIn = Number(ethers.formatEther(a.ethIn)), sqkIn = Number(ethers.formatEther(a.sqkIn));
+    return `<tr><td>#${ev.blockNumber}</td><td>${a.ethIn > 0n ? `${fmt(ethIn, 5)} ETH → ${fmt(ethers.formatEther(a.sqkOut), 2)} SQK` : `${fmt(sqkIn, 2)} SQK → ${fmt(ethers.formatEther(a.ethOut), 6)} ETH`}</td><td><span class="tag ${w}">${w}</span></td><td>${(f / 100).toFixed(2)}%</td><td><a target="_blank" rel="noopener" href="${C.explorer}/tx/${ev.transactionHash}">${short(ev.transactionHash)}</a></td></tr>`;
+  });
+  swaps.forEach(ev => { const a = ev.args, f = Number(a.feeBps) / 10000; feeEth += Number(ethers.formatEther(a.ethIn)) * f; feeSqk += Number(ethers.formatEther(a.sqkIn)) * f; });
+  $('swaps').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" style="color:var(--mute)">no swaps yet — be the first</td></tr>';
+  $('feesTot').textContent = `${fmt(feeEth, 6)} ETH + ${fmt(feeSqk, 3)} SQK`;
+  // observations
+  let prevW = null, prevH = null;
+  const orow = obs.map(ev => { const a = ev.args, w = W[Number(a.wheel)]; const dW = prevW === null ? null : Number(a.work - prevW), dH = prevH === null ? null : Number(a.height - prevH); const pace = dW !== null && dH ? Math.round(dW * 1000 / dH) : null; prevW = a.work; prevH = a.height; return `<tr><td>${a.height}</td><td>${dW === null ? '—' : '+' + dW}</td><td>${pace === null ? '—' : pace}</td><td>${a.difficulty}</td><td><span class="tag ${w}">${w}</span></td></tr>`; }).reverse().slice(0, 12);
+  $('obs').innerHTML = orow.length ? orow.join('') : '<tr><td colspan="5" style="color:var(--mute)">none yet — the first swap after a settlement records one</td></tr>';
+  drawChart(syncs.map(ev => ({ b: ev.blockNumber, p: ev.args.reserveETH > 0n ? Number(ev.args.reserveSQK) / Number(ev.args.reserveETH) : 0 })).filter(x => x.p > 0));
+}
+function drawChart(pts) {
+  const cv = $('chart'), ctx = cv.getContext('2d'); const Wd = cv.width = cv.clientWidth * 2, Hd = cv.height = 320; ctx.clearRect(0, 0, Wd, Hd);
+  if (pts.length < 2) { ctx.fillStyle = '#7f8ba3'; ctx.font = '22px IBM Plex Mono'; ctx.fillText(pts.length ? 'one data point — price history starts with the next swap' : 'no liquidity yet', 20, Hd / 2); return; }
+  const min = Math.min(...pts.map(p => p.p)) * 0.98, max = Math.max(...pts.map(p => p.p)) * 1.02;
+  const x = i => 30 + i * (Wd - 60) / (pts.length - 1), y = p => Hd - 30 - (p - min) / (max - min || 1) * (Hd - 60);
+  ctx.strokeStyle = '#1d2740'; ctx.lineWidth = 1; for (let g = 0; g <= 4; g++) { const yy = 30 + g * (Hd - 60) / 4; ctx.beginPath(); ctx.moveTo(30, yy); ctx.lineTo(Wd - 30, yy); ctx.stroke(); }
+  const grad = ctx.createLinearGradient(0, 0, 0, Hd); grad.addColorStop(0, 'rgba(255,181,69,.35)'); grad.addColorStop(1, 'rgba(255,181,69,0)');
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(x(i), y(p.p)) : ctx.moveTo(x(i), y(p.p))); ctx.lineTo(x(pts.length - 1), Hd - 30); ctx.lineTo(x(0), Hd - 30); ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(x(i), y(p.p)) : ctx.moveTo(x(i), y(p.p))); ctx.strokeStyle = '#ffb545'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#dfe6f3'; ctx.font = '20px IBM Plex Mono'; ctx.fillText(fmt(max / 1.02, 1) + ' SQK/ETH', 34, 50); ctx.fillText(fmt(min / 0.98, 1), 34, Hd - 38);
+  ctx.fillStyle = '#7f8ba3'; ctx.fillText(`#${pts[0].b}`, 30, Hd - 8); const t = `#${pts[pts.length - 1].b}`; ctx.fillText(t, Wd - 30 - ctx.measureText(t).width, Hd - 8);
+  $('chartNote').textContent = `${pts.length} Sync events · last ${fmt(pts[pts.length - 1].p, 2)} SQK per ETH`;
+}
+
+// ---------------- wallet ----------------
+$('connect').onclick = connect;
+async function connect() {
+  if (!window.ethereum) { toast('No wallet found. Install MetaMask / Rabby (Sepolia).'); return; }
+  const bp = new ethers.BrowserProvider(window.ethereum);
+  await bp.send('eth_requestAccounts', []);
+  let net = await bp.getNetwork();
+  if (Number(net.chainId) !== C.chainId) {
+    try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: C.chainHex }] }); }
+    catch (e) { if (e.code === 4902) await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: C.chainHex, chainName: 'Sepolia', nativeCurrency: { name: 'SepoliaETH', symbol: 'ETH', decimals: 18 }, rpcUrls: [C.rpc], blockExplorerUrls: [C.explorer] }] }); else throw e; }
+  }
+  signer = await bp.getSigner(); me = await signer.getAddress();
+  poolW = pool.connect(signer); sqkW = new ethers.Contract(C.sqk, SQK_ABI, signer);
+  $('acct').textContent = short(me); $('acct').hidden = false; $('connect').textContent = 'Connected';
+  window.ethereum.on?.('accountsChanged', () => location.reload()); window.ethereum.on?.('chainChanged', () => location.reload());
+  await refreshPool();
+}
+function friendly(e) {
+  const m = (e?.shortMessage || e?.reason || e?.message || String(e));
+  if (/user rejected|denied|rejected/i.test(m)) return 'cancelled in wallet';
+  const known = ['Expired', 'Slippage', 'InsufficientOutput', 'InsufficientLiquidity', 'InsufficientInput', 'InsufficientBalance', 'EthSendFailed', 'Reentrancy', 'Overflow'];
+  const k = known.find(x => m.includes(x)); if (k) return 'reverted: ' + k + (k === 'Slippage' || k === 'InsufficientOutput' ? ' — the wheel tier or price moved; re-quote and retry' : '');
+  return m.slice(0, 160);
+}
+function isqrt(n) { if (n < 2n) return n; let x = n, y = (n >> 1n) + 1n; while (y < x) { x = y; y = (y + n / y) >> 1n; } return x; }
+function min(a, b) { return a < b ? a : b; }
+
+// ---------------- tabs + boot ----------------
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b)); ['swap', 'add', 'remove'].forEach(t => $('tab-' + t).hidden = t !== b.dataset.tab); });
+await refreshPool().catch(e => { console.error(e); $('wheelTxt').textContent = 'RPC error: ' + e.message.slice(0, 60); });
+refreshCam(); loadEvents().catch(console.error);
+setInterval(() => refreshPool().catch(() => {}), 15000); setInterval(refreshCam, 10000); setInterval(() => loadEvents().catch(() => {}), 60000);
+})();
+</script>
+</body>
+</html>
